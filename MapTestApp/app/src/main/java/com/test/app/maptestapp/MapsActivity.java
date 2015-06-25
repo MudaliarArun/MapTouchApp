@@ -1,7 +1,8 @@
 package com.test.app.maptestapp;
 
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -19,6 +20,8 @@ public class MapsActivity extends FragmentActivity {
     private ArrayList<LatLng> mLatLngs;
     //public static boolean mMapIsTouched;
     //public static boolean mMapIsMoved;
+    private Handler handler = new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,9 +34,9 @@ public class MapsActivity extends FragmentActivity {
     private void initLatLng() {
         mLatLngs = new ArrayList<>();
         mLatLngs.add(new LatLng(23.00090, 72.60271));
-        mLatLngs.add(new LatLng(23.0007374,72.6054951));
+        mLatLngs.add(new LatLng(23.0007374, 72.6054951));
         mLatLngs.add(new LatLng(23.009132, 72.605238));
-        mLatLngs.add(new LatLng(23.0051155,72.6056886));
+        mLatLngs.add(new LatLng(23.0051155, 72.6056886));
         mLatLngs.add(new LatLng(23.009816, 72.599938));
         mLatLngs.add(new LatLng(23.009816, 72.599938));
         mLatLngs.add(new LatLng(23.007135, 72.602073));
@@ -68,7 +71,7 @@ public class MapsActivity extends FragmentActivity {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            final MySupportMapFragment mySupportMapFragment  = ((MySupportMapFragment)
+            final MySupportMapFragment mySupportMapFragment = ((MySupportMapFragment)
                     getSupportFragmentManager().findFragmentById(R.id.map));
             mMap = mySupportMapFragment.getMap();
             // Check if we were successful in obtaining the map.
@@ -79,10 +82,23 @@ public class MapsActivity extends FragmentActivity {
                     @Override
                     public void onMapLoaded() {
                         mySupportMapFragment.addSupportMapListener(new MySupportMapFragment.SupportMapListener() {
+                            private Runnable mRunnable;
 
                             @Override
                             public void onMoveEnd() {
-                                checkVisibleMarkers(mMap, mLatLngs);
+
+                                if (mRunnable != null) {
+                                    handler.removeCallbacks(mRunnable);
+                                }
+                                mRunnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        System.out.println("Pins onHandler");
+                                        checkVisibleMarkers(mMap, mLatLngs);
+                                    }
+                                };
+                                handler.postDelayed(mRunnable, 250);
+
                             }
 
                             @Override
@@ -112,18 +128,18 @@ public class MapsActivity extends FragmentActivity {
      */
     private void buildMarkers() {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (int i=0; i<mLatLngs.size();i++) {
+        for (int i = 0; i < mLatLngs.size(); i++) {
             MarkerOptions markerOptions = new MarkerOptions().position(mLatLngs.get(i)).title("Marker");
             mMap.addMarker(markerOptions);
             builder.include(markerOptions.getPosition());
         }
 
         LatLngBounds bounds = builder.build();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,10));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 10));
     }
 
-    public void zoomIn(){
-    // Map animate listener Zoom in
+    public void zoomIn() {
+        // Map animate listener Zoom in
 
         if (mMap != null) {
             mMap.animateCamera(CameraUpdateFactory.zoomIn(), new GoogleMap.CancelableCallback() {
@@ -160,9 +176,8 @@ public class MapsActivity extends FragmentActivity {
     }
 
 
-
     // Method to track visible pins
-    public void checkVisibleMarkers(GoogleMap map, ArrayList< LatLng > markers) {
+    public void checkVisibleMarkers(GoogleMap map, ArrayList<LatLng> markers) {
 
         int pinsVisible = 0;
         int pinsInVisible = 0;
