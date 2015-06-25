@@ -3,6 +3,8 @@ package com.test.app.maptestapp;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -21,7 +23,8 @@ public class MapsActivity extends FragmentActivity {
     //public static boolean mMapIsTouched;
     //public static boolean mMapIsMoved;
     private Handler handler = new Handler();
-
+    private TextView mTextViewZoomIn;
+    private TextView mTextViewZoomOut;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +77,20 @@ public class MapsActivity extends FragmentActivity {
             final MySupportMapFragment mySupportMapFragment = ((MySupportMapFragment)
                     getSupportFragmentManager().findFragmentById(R.id.map));
             mMap = mySupportMapFragment.getMap();
+            mTextViewZoomIn = (TextView) findViewById(R.id.zoom_in);
+            mTextViewZoomIn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    zoomIn();
+                }
+            });
+            mTextViewZoomOut = (TextView) findViewById(R.id.zoom_out);
+            mTextViewZoomOut.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    zoomOut();
+                }
+            });
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
 
@@ -81,6 +98,7 @@ public class MapsActivity extends FragmentActivity {
                 mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
                     @Override
                     public void onMapLoaded() {
+                        mMap.getUiSettings().setZoomControlsEnabled(false);
                         mySupportMapFragment.addSupportMapListener(new MySupportMapFragment.SupportMapListener() {
                             private Runnable mRunnable;
 
